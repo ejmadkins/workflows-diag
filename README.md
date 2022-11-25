@@ -14,6 +14,7 @@ The following are a basic set of setup instructions:
 
 1. Create a docker container for the ping and diagnostics services and deploy to [Cloud Run](https://cloud.google.com/run/docs/quickstarts/deploy-container)
 2. Update the `workflow.yaml` file with the deployed Cloud Run URLs
-3. Create a new Workflow and copy the `workflow.yaml` file to the source
-4. Ensure that the service account (Default is Compute Engine Default) used by Workflows [Cloud Datastore User](https://cloud.google.com/datastore/docs/access/iam#iam_roles)
-5. Trigger execution manually with curl command in the `demo.sh` file
+3. Create a new Workflow and copy the contents of the `workflow.yaml` file to the source
+4. Ensure that the service account (Default is Compute Engine Default) used by Workflows has the [Cloud Datastore User](https://cloud.google.com/datastore/docs/access/iam#iam_roles) IAM role applied
+5. Trigger execution manually with the curl command in the `demo.sh` file
+6. Check the status of the workflow via the curl command in the `demo.sh` file
