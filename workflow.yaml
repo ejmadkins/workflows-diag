@@ -1,0 +1,60 @@
+main:
+    params: [input]
+    steps:
+    - validateAccessToken:
+        try:
+            call: http.post
+            args:
+                url: https://ping-qgkftye77a-ew.a.run.app
+                auth:
+                    type: OIDC
+                headers:
+                    Cache-Control: max-age=30
+                body:
+                    accessToken: token
+            result: commitResult
+        retry: ${http.default_retry}
+    - initiateDiagnostics:
+        call: http.post
+        args:
+            url: https://diagnostics-qgkftye77a-ew.a.run.app/create
+            auth:
+                type: OIDC
+        result: diagnosticId
+    - createDiagnosticsDocument:
+        call: googleapis.firestore.v1.projects.databases.documents.createDocument
+        args:
+            collectionId: diagnostics-workflow
+            documentId: ${diagnosticId.body}
+            parent: ${"projects/" + sys.get_env("GOOGLE_CLOUD_PROJECT_ID") + "/databases/(default)/documents"}
+    - getDiagnosticsResults:
+        call: http.get
+        args:
+            url: ${"https://diagnostics-qgkftye77a-ew.a.run.app/get-results/" + diagnosticId.body}
+            auth:
+                type: OIDC
+        result: getDiagnosticResults
+    - logDiagResults:
+        call: sys.log
+        args:
+            text: ${getDiagnosticResults}
+    - pollDiagnosticsJobState:
+        switch:
+            - condition: ${getDiagnosticResults.body.status != "COMPLETE"}
+              steps:
+                - wait_10s:
+                    call: sys.sleep
+                    args:
+                        seconds: 10
+                    next: getDiagnosticsResults
+    - commitDiganosticsObject:
+        call: googleapis.firestore.v1.projects.databases.documents.patch
+        args:
+            name: ${"projects/" + sys.get_env("GOOGLE_CLOUD_PROJECT_ID") + "/databases/(default)/documents/diagnostics-workflow/" + diagnosticId.body}
+            body:
+                fields:
+                    errorCode:
+                        stringValue: ${getDiagnosticResults.body.errorCode}
+                    status:
+                        stringValue: ${getDiagnosticResults.body.status}
+        result: patchResult
