@@ -5,7 +5,7 @@ main:
         try:
             call: http.post
             args:
-                url: https://ping-qgkftye77a-ew.a.run.app
+                url: # add the http url for your deployed Cloud Run instance of the ping service
                 auth:
                     type: OIDC
                 headers:
@@ -17,7 +17,7 @@ main:
     - initiateDiagnostics:
         call: http.post
         args:
-            url: https://diagnostics-qgkftye77a-ew.a.run.app/create
+            url: # add the http url for your deployed Cloud Run instance of the diagnostic service
             auth:
                 type: OIDC
         result: diagnosticId
@@ -30,7 +30,7 @@ main:
     - getDiagnosticsResults:
         call: http.get
         args:
-            url: ${"https://diagnostics-qgkftye77a-ew.a.run.app/get-results/" + diagnosticId.body}
+            url: # ${ add the http url for your deployed Cloud Run instance of the diagnostic service + diagnosticId.body}
             auth:
                 type: OIDC
         result: getDiagnosticResults
